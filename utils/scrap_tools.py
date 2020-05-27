@@ -14,6 +14,27 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
+def extraer_metar(filename):
+    formato = r'\d{12}'
+    f2 = open('test/prueba.txt', 'w')
+    with open(filename) as f:
+        metar = []
+        for linea in f:
+            acierto = re.match(formato, linea)
+            acierto_espacios = re.match(r'\s{2,}', linea)
+            if acierto:
+                metar.append(linea.replace('\n', ''))
+            elif acierto_espacios:
+                metar.append(re.sub(r'\s{2,}', " ", linea).replace('\n', ''))
+            else:
+                continue
+            
+            for elemento in metar:
+                if elemento.count('=') > 0:
+                    f2.write(''.join(metar) + '\n')
+                    metar = []
+    f2.close()
+
 def scrap_metar(url):
     """
     Esta función scrapea la página de Ogimet.com para obtener el último METAR emitido
@@ -29,30 +50,12 @@ def scrap_metar(url):
     req = requests.get(url)
     statusCode = req.status_code
     if statusCode == 200:
-        mensaje = "{}... Se accede correctamente a la página de Ogimet.com."
-        registro_de_actividad(log, mensaje=mensaje)
         html = BeautifulSoup(req.text, "html.parser")
         entrada = html.find('pre')
         f.write(str(entrada))
-        mensaje = "{}... Se escribe correctamente el METAR más reciente en el archivo 'texto_web.txt'."
-        registro_de_actividad(log, mensaje=mensaje)
     else:
-        mensaje = "{}... No se pudo acceder a la pádina de Ogimet.com."
-        registro_de_actividad(log, mensaje=mensaje)
         return ''
     f.close()
 
     # Se abre de nuevo el archivo texto_web.txt para extraer el METAR
-    formato = r'\d{12}'
-    with open("texto_web.txt") as f:
-        lista = []
-        for linea in f:
-            match = re.match(formato, linea)
-            if match:
-                lista.append(linea.replace('\n', ''))
-                for linea in f:
-                    if linea.count("</pre>") > 0:
-                        break
-                    lista.append(re.sub(r'\s{2,}', '', linea.replace('\n', '')))
-                return " ".join(lista)
-    return ''
+    extraer_metar("texto_web.txt")

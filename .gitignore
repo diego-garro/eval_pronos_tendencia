@@ -1,3 +1,11 @@
 # Carpeta de testing
 test/prueba
 test/*.o
+test/prueba.txt
+
+# Texto proveniente del scrap a la página de Ogimet.com
+texto_web.txt
+
+# Carpetas de compilación de módulos de Python
+utils/__pycache__/
+utils/__pycache__/*.pyc
